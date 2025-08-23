@@ -1,0 +1,110 @@
+// Product Data
+const products = [
+  { id: 1, name: "Phone Charger", category: "chargers", credits: 200, image: "🔌" },
+  { id: 2, name: "Laptop Charger", category: "chargers", credits: 450, image: "🔌" },
+  { id: 3, name: "Old Smartphone", category: "phones", credits: 6000, image: "📱" },
+  { id: 4, name: "Old Laptop", category: "laptops", credits: 25000, image: "💻" },
+];
+
+let cart = [];
+let userCredits = 2500;
+
+// Show Section
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+// Display Products
+function displayProducts(list = products) {
+  const grid = document.getElementById("productsGrid");
+  grid.innerHTML = list.map(p => `
+    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+      <div class="text-4xl mb-4 text-center">${p.image}</div>
+      <h3 class="font-semibold text-lg mb-2">${p.name}</h3>
+      <p class="text-gray-600 mb-2">Credits: ₹${p.credits}</p>
+      <button onclick="addToCart(${p.id})" class="w-full bg-blue-600 text-white py-2 rounded-lg">Add to Cart</button>
+    </div>
+  `).join("");
+}
+
+// Filter Products
+function filterProducts(category) {
+  const filtered = category === "all" ? products : products.filter(p => p.category === category);
+  displayProducts(filtered);
+}
+
+// Cart
+function addToCart(id) {
+  const p = products.find(x => x.id === id);
+  const item = cart.find(x => x.id === id);
+  if (item) item.qty++;
+  else cart.push({ ...p, qty: 1 });
+  updateCart();
+}
+function updateCart() {
+  const cartItems = document.getElementById("cartItems");
+  const cartSummary = document.getElementById("cartSummary");
+  const cartTotal = document.getElementById("cartTotal");
+  const cartCount = document.getElementById("cartCount");
+
+  let total = 0;
+  cartItems.innerHTML = cart.map(i => {
+    total += i.credits * i.qty;
+    return `<div class="flex justify-between bg-white p-3 rounded-lg mb-2">
+      <span>${i.name} × ${i.qty}</span>
+      <span>₹${i.credits * i.qty}</span>
+    </div>`;
+  }).join("");
+
+  if (cart.length > 0) {
+    cartSummary.classList.remove("hidden");
+    cartTotal.textContent = `₹${total}`;
+  } else {
+    cartSummary.classList.add("hidden");
+    cartItems.innerHTML = "<p>Your cart is empty</p>";
+  }
+  cartCount.textContent = cart.reduce((sum, i) => sum + i.qty, 0);
+}
+function processCart() {
+  let total = cart.reduce((sum, i) => sum + i.credits * i.qty, 0);
+  userCredits += total;
+  cart = [];
+  updateCart();
+  updateCredits();
+}
+
+// Redeem
+function redeemVoucher(platform, amount) {
+  if (userCredits >= amount) {
+    userCredits -= amount;
+    updateCredits();
+    alert(`${platform} voucher redeemed for ₹${amount}`);
+  } else {
+    alert("Not enough credits");
+  }
+}
+
+// Credits
+function updateCredits() {
+  document.getElementById("userCredits").textContent = `₹${userCredits}`;
+  document.getElementById("redeemCredits").textContent = `₹${userCredits}`;
+}
+
+// Auth
+function login(e) {
+  e.preventDefault();
+  document.getElementById("loginForm").classList.add("hidden");
+  document.getElementById("userDashboard").classList.remove("hidden");
+}
+function signup(e) {
+  e.preventDefault();
+  document.getElementById("signupForm").classList.add("hidden");
+  document.getElementById("userDashboard").classList.remove("hidden");
+}
+
+// Init
+document.addEventListener("DOMContentLoaded", () => {
+  displayProducts();
+  updateCredits();
+});
